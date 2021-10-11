@@ -1,0 +1,91 @@
+
+from controller import Robot
+
+max_speed = 6
+
+robot = Robot()
+timestep = int(robot.getBasicTimeStep())
+
+#motor
+leftmotor = robot.getDevice('motor_1')
+rightmotor = robot.getDevice('motor_2')
+leftmotor.setPosition(float('inf'))
+rightmotor.setPosition(float('inf'))
+
+#sensor proximity
+lj = robot.getDevice('ds_left')
+rj = robot.getDevice('ds_right')
+fj = robot.getDevice('ds_front')
+
+#prox_sensors = []
+#for ind in range(8):
+#    sensor_name = 'ps' + str(ind)
+ #   prox_sensors.append(robot.getDistanceSensor(sensor_name))
+ #   prox_sensors[ind].enable(timestep)
+
+
+#Line sensor kiri
+irl2 = robot.getDevice('IRL2')
+irl1 = robot.getDevice('IRL1')
+ircl = robot.getDevice('IRCL')
+#IRL = robot.getDevice('IRL2' + 'IRL1' + 'IRCL')
+
+#Line Sensor kanan
+ircr = robot.getDevice('IRCR')
+irr1 = robot.getDevice('IRR1')
+irr2 = robot.getDevice('IRR2')
+#IRR = robot.getDevice('IRCR' + 'IRR1' + 'IRR2')
+
+irl2.enable(timestep)
+irl1.enable(timestep)
+ircl.enable(timestep)
+ircr.enable(timestep)
+irr1.enable(timestep)
+irr2.enable(timestep)
+#IRR.enable(timestep)
+#IRL.enable(timestep)
+lj.enable(timestep)
+rj.enable(timestep)
+fj.enable(timestep)
+
+
+left_speed = max_speed * 0.25
+right_speed = max_speed * 0.25
+
+
+
+while robot.step(timestep) != -1:
+    irl2_val = irl2.getValue()
+    irl1_val = irl1.getValue()
+    ircl_val = ircl.getValue()
+    ircr_val = ircr.getValue()
+    irr1_val = irr1.getValue()
+    irr2_val = irr2.getValue()
+    
+    lj_val = lj.getValue()
+    rj_val = rj.getValue()
+    fj_val = fj.getValue()
+    
+    IRR_val = ircr.getValue() + irr1.getValue() + irr2.getValue()
+    IRL_val = ircl.getValue() + irl1.getValue() +irl2.getValue()
+    
+    print('{:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}'.format(irl2_val, irl1_val, ircl_val, ircr_val, irr1_val, irr2_val, rj_val, lj_val, fj_val))
+    print('{:.2f} {:.2f}'.format(IRL_val, IRR_val))
+
+ 
+    if (1 < irl2_val and irr2_val < 200) or (1 < ircl_val and ircr_val < 200):
+        print ("Go")
+        left_speed = max_speed
+        right_speed = max_speed
+
+    elif (IRR_val > irl2_val) and (6 < irl2_val < 200):
+        print ("Go Left")
+        left_speed = -max_speed
+           
+    elif (IRL_val > irr2_val) and (6 < irr2_val and irr1_val < 200):
+        print ("Go Right")
+        right_speed = -max_speed
+
+       
+    leftmotor.setVelocity(left_speed)
+    rightmotor.setVelocity(right_speed)
